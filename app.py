@@ -1,6 +1,7 @@
 import streamlit as st
 import random
 import plotly.graph_objs as go
+import time
 
 class RuletaApp:
     def __init__(self):
@@ -16,8 +17,8 @@ class RuletaApp:
         # Número de secciones
         n = len(nombres)
         
-        # Generar rotación total (más rápida y más vueltas)
-        rotacion_total = random.randint(5000, 7000)  # Aumentar velocidad de rotación
+        # Generar rotación total
+        rotacion_total = random.randint(5000, 7000)  # Muchas vueltas
         
         # Calcular ganador
         angulo_seccion = 360 / n
@@ -26,7 +27,7 @@ class RuletaApp:
         
         return rotacion_total, ganador
 
-    def crear_figura_ruleta(self, nombres, rotacion):
+    def crear_figura_ruleta(self, nombres, rotacion_inicial=0):
         """Crear figura de la ruleta con Plotly"""
         # Colores pasteles
         colores = ['#FF9999', '#99FF99', '#9999FF', '#FFFF99', '#FF99FF']
@@ -40,7 +41,7 @@ class RuletaApp:
             marker_colors=colores[:n],
             textinfo='label',
             textposition='inside',
-            rotation=rotacion
+            rotation=rotacion_inicial  # Rotación inicial
         )])
         
         # Configurar layout
@@ -48,10 +49,6 @@ class RuletaApp:
             height=600,
             width=600,
             showlegend=False,
-            transition=dict(
-                duration=2000,  # Duración de 2 segundos
-                easing='linear'
-            ),
             annotations=[
                 dict(
                     x=0.5,  # Centrado horizontalmente
@@ -91,14 +88,18 @@ class RuletaApp:
                 # Botón para girar
                 if st.button("Girar Ruleta"):
                     # Crear animación de giro
-                    rotacion, ganador = self.crear_ruleta_animada(st.session_state.nombres)
+                    rotacion_total, ganador = self.crear_ruleta_animada(st.session_state.nombres)
                     
-                    # Crear figura de la ruleta
-                    fig = self.crear_figura_ruleta(st.session_state.nombres, rotacion)
-                    
-                    # Mostrar ruleta
+                    # Animación de giro
                     with col1:
-                        st.plotly_chart(fig, use_container_width=True)
+                        ruleta_container = st.empty()
+                        
+                        # Simular giro
+                        for i in range(20):
+                            rotacion_actual = int(rotacion_total * (i + 1) / 20)
+                            fig = self.crear_figura_ruleta(st.session_state.nombres, rotacion_actual)
+                            ruleta_container.plotly_chart(fig, use_container_width=True)
+                            time.sleep(0.1)  # Pequeña pausa entre frames
         else:
             with col2:
                 st.warning("Por favor, cargue un archivo con nombres de alumnos")
