@@ -109,7 +109,7 @@ def main():
                         dict(
                             x=0.5,  # Centrado horizontalmente
                             y=1.15,  # Posición en la parte superior
-                            text='👆',  # Emoji de mano señalando hacia abajo
+                            text='👇',  # Emoji de mano señalando hacia abajo
                             font=dict(size=100),  # Tamaño grande
                             showarrow=False
                         )
