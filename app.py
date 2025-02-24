@@ -1,45 +1,38 @@
 import streamlit as st
 import random
+import time
 
 def main():
     st.title("🎡 Ruleta de Selección de Alumnos")
     
-    # Sidebar para cargar archivo
-    st.sidebar.header("Cargar Lista de Alumnos")
-    uploaded_file = st.sidebar.file_uploader("Seleccione un archivo .txt", type=['txt'])
+    # Archivo de texto
+    uploaded_file = st.file_uploader("Cargar archivo de nombres", type="txt")
     
-    # Lista de nombres
-    nombres = []
+    # Contenedor para mostrar el resultado
+    result_container = st.empty()
+    winner_container = st.empty()
     
-    # Procesar archivo cargado
     if uploaded_file is not None:
-        # Leer el archivo
-        file_contents = uploaded_file.getvalue().decode("utf-8")
-        # Dividir por líneas y limpiar
-        nombres = [name.strip() for name in file_contents.split('\n') if name.strip()]
+        # Leer nombres del archivo
+        nombres = uploaded_file.getvalue().decode("utf-8").splitlines()
+        nombres = [nombre.strip() for nombre in nombres if nombre.strip()]
         
-        # Mostrar cuántos nombres se cargaron
-        st.sidebar.success(f"Se cargaron {len(nombres)} nombres")
-    
-    # Botón para girar la ruleta
-    if st.sidebar.button("Girar Ruleta") and nombres:
-        # Mostrar ruleta usando emojis
-        st.markdown("### 🎡 Ruleta Girando...")
+        # Mostrar número de nombres cargados
+        st.write(f"Nombres cargados: {len(nombres)}")
         
-        # Efecto de giro
-        for _ in range(5):
-            st.write(random.choice(nombres))
-        
-        # Seleccionar ganador
-        winner = random.choice(nombres)
-        
-        # Mostrar ganador
-        st.markdown(f"### 🏆 ¡GANADOR! 🏆")
-        st.markdown(f"## {winner}")
-    
-    # Advertencia si no hay nombres
-    elif st.sidebar.button("Girar Ruleta"):
-        st.warning("Por favor, cargue un archivo con nombres de alumnos")
+        # Botón para girar
+        if st.button("Girar Ruleta"):
+            # Efecto de giro
+            for _ in range(5):
+                result_container.write(f"🎲 Girando... {random.choice(nombres)}")
+                time.sleep(0.5)
+            
+            # Seleccionar ganador
+            ganador = random.choice(nombres)
+            
+            # Mostrar ganador con flecha
+            result_container.markdown(f"### 🏆 ¡GANADOR! 🏆")
+            winner_container.markdown(f"## ➡️ {ganador}")
 
 if __name__ == "__main__":
     main()
