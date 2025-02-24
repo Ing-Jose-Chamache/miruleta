@@ -49,7 +49,7 @@ class RuletaApp:
             width=600,
             showlegend=False,
             transition=dict(
-                duration=1000,  # Duración exacta de 1 segundo
+                duration=2000,  # Duración de 2 segundos
                 easing='linear'
             ),
             annotations=[
