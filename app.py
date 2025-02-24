@@ -2,12 +2,15 @@ import streamlit as st
 import random
 import plotly.graph_objs as go
 import time
+import uuid
 
 class RuletaApp:
     def __init__(self):
         # Inicializar estado de la aplicación
         if 'nombres' not in st.session_state:
             st.session_state.nombres = []
+        if 'ultima_ruleta_id' not in st.session_state:
+            st.session_state.ultima_ruleta_id = None
 
     def crear_ruleta_animada(self, nombres):
         """Crear animación de giro de ruleta"""
@@ -87,10 +90,13 @@ class RuletaApp:
             with col2:
                 # Botón para girar
                 if st.button("Girar Ruleta"):
+                    # Generar un ID único para esta ruleta
+                    st.session_state.ultima_ruleta_id = str(uuid.uuid4())
+                    
                     # Crear animación de giro
                     rotacion_total, ganador = self.crear_ruleta_animada(st.session_state.nombres)
                     
-                    # Animación de giro
+                    # Contenedor con ID único
                     with col1:
                         ruleta_container = st.empty()
                         
@@ -98,7 +104,13 @@ class RuletaApp:
                         for i in range(20):
                             rotacion_actual = int(rotacion_total * (i + 1) / 20)
                             fig = self.crear_figura_ruleta(st.session_state.nombres, rotacion_actual)
-                            ruleta_container.plotly_chart(fig, use_container_width=True)
+                            
+                            # Usar key con ID único para prevenir errores
+                            ruleta_container.plotly_chart(
+                                fig, 
+                                use_container_width=True, 
+                                key=f'{st.session_state.ultima_ruleta_id}_{i}'
+                            )
                             time.sleep(0.1)  # Pequeña pausa entre frames
         else:
             with col2:
