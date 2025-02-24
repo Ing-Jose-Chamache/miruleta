@@ -3,13 +3,16 @@ import random
 import plotly.graph_objs as go
 
 def crear_ruleta(nombres):
-    """Crear ruleta interactiva con Plotly"""
+    """Crear ruleta interactiva con Plotly y giro aleatorio"""
     # Colores pasteles
     colores = ['#FF9999', '#99FF99', '#9999FF', '#FFFF99', '#FF99FF', 
                '#FFD700', '#98FB98', '#87CEFA', '#DDA0DD', '#F0E68C']
     
     # Número de secciones
     n = len(nombres)
+    
+    # Rotación aleatoria con múltiples vueltas
+    rotacion_base = random.randint(3600, 7200)  # 10-20 vueltas completas
     
     # Preparar datos para la ruleta
     fig = go.Figure(data=[go.Pie(
@@ -19,10 +22,10 @@ def crear_ruleta(nombres):
         marker_colors=colores[:n],
         textinfo='label',
         textposition='inside',
-        rotation=random.randint(0, 360)  # Rotación aleatoria
+        rotation=rotacion_base  # Rotación dinámica
     )])
     
-    # Configurar layout
+    # Configurar layout para giro
     fig.update_layout(
         title='Ruleta de Selección de Alumnos',
         annotations=[
@@ -35,10 +38,39 @@ def crear_ruleta(nombres):
             )
         ],
         height=600,
-        width=600
+        width=600,
+        updatemenus=[{
+            'buttons': [{
+                'args': [{'pie.rotation': rotacion_base}, 
+                         {'duration': 3000, 'transition': {'duration': 3000}}],
+                'label': 'Girar',
+                'method': 'animate'
+            }],
+            'direction': 'left',
+            'pad': {'r': 10, 't': 10},
+            'showactive': False,
+            'type': 'buttons',
+            'x': 0.1,
+            'xanchor': 'left',
+            'y': 0,
+            'yanchor': 'top'
+        }]
     )
     
-    return fig
+    return fig, rotacion_base
+
+def calcular_ganador(nombres, rotacion, n):
+    """Calcular el ganador basado en la rotación"""
+    # Ángulo por sección
+    angulo_seccion = 360 / n
+    
+    # Ajustar rotación
+    rotacion_final = rotacion % 360
+    
+    # Calcular índice del ganador
+    indice_ganador = int((360 - rotacion_final) / angulo_seccion)
+    
+    return nombres[indice_ganador % n]
 
 def main():
     st.title("🎡 Ruleta de Selección de Alumnos")
@@ -57,13 +89,13 @@ def main():
         # Botón para girar
         if st.sidebar.button("Girar Ruleta"):
             # Crear ruleta
-            fig = crear_ruleta(nombres)
+            fig, rotacion = crear_ruleta(nombres)
             
             # Mostrar ruleta
             st.plotly_chart(fig)
             
-            # Seleccionar ganador (aleatorio)
-            ganador = random.choice(nombres)
+            # Calcular ganador
+            ganador = calcular_ganador(nombres, rotacion, len(nombres))
             
             # Mostrar ganador
             st.sidebar.markdown("### 🏆 ¡GANADOR! 🏆")
