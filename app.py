@@ -22,7 +22,7 @@ class RuletaApp:
         n = len(nombres)
         
         # Generar rotación total
-        rotacion_total = random.randint(720, 3600)  # 2-10 vueltas
+        rotacion_total = random.randint(2000, 4000)  # Más rápido y más vueltas
         
         # Calcular ganador
         angulo_seccion = 360 / n
@@ -53,6 +53,10 @@ class RuletaApp:
             height=600,
             width=600,
             showlegend=False,
+            transition=dict(
+                duration=1000,  # Duración de la animación
+                easing='cubic-in-out'
+            ),
             annotations=[
                 dict(
                     x=0.5,  # Centrado horizontalmente
