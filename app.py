@@ -1,44 +1,65 @@
 import streamlit as st
 import random
 import plotly.graph_objs as go
+import time
 
-def crear_ruleta(nombres, rotacion=0):
-    """Crear ruleta interactiva con Plotly y rotación"""
+def crear_ruleta_animada(nombres):
+    """Crear animación de giro de ruleta"""
     # Colores pasteles
     colores = ['#FF9999', '#99FF99', '#9999FF', '#FFFF99', '#FF99FF']
     
     # Número de secciones
     n = len(nombres)
     
-    # Preparar datos para la ruleta
-    fig = go.Figure(data=[go.Pie(
-        labels=nombres,
-        values=[1]*n,  # Secciones iguales
-        hole=0.3,  # Efecto de dona
-        marker_colors=colores[:n],
-        textinfo='label',
-        textposition='inside',
-        rotation=rotacion  # Añadir rotación
-    )])
+    # Generar secuencia de rotaciones para simular giro
+    rotaciones = []
+    rotacion_total = random.randint(720, 3600)  # 2-10 vueltas
     
-    # Configurar layout
-    fig.update_layout(
-        title='Ruleta de Selección de Alumnos',
-        height=600,
-        width=600,
-        showlegend=False
-    )
+    # Crear pasos de rotación
+    pasos = 20
+    for i in range(pasos):
+        # Interpolar la rotación
+        rotacion_actual = int(rotacion_total * (i + 1) / pasos)
+        rotaciones.append(rotacion_actual)
     
-    # Añadir flecha
-    fig.add_annotation(
-        x=0.5, 
-        y=1.15,
-        text='➡️',
-        showarrow=False,
-        font=dict(size=50)
-    )
+    # Preparar frames de animación
+    frames = []
+    for rotacion in rotaciones:
+        frame = go.Figure(data=[go.Pie(
+            labels=nombres,
+            values=[1]*n,  # Secciones iguales
+            hole=0.3,  # Efecto de dona
+            marker_colors=colores[:n],
+            textinfo='label',
+            textposition='inside',
+            rotation=rotacion  # Rotación dinámica
+        )])
+        
+        # Configurar layout
+        frame.update_layout(
+            title='Ruleta de Selección de Alumnos',
+            height=600,
+            width=600,
+            showlegend=False
+        )
+        
+        # Añadir flecha
+        frame.add_annotation(
+            x=0.5, 
+            y=1.15,
+            text='➡️',
+            showarrow=False,
+            font=dict(size=50)
+        )
+        
+        frames.append(frame)
     
-    return fig
+    # Calcular ganador
+    angulo_seccion = 360 / n
+    indice_ganador = int((360 - (rotacion_total % 360)) / angulo_seccion)
+    ganador = nombres[indice_ganador % n]
+    
+    return frames, ganador
 
 def main():
     st.title("🎡 Ruleta de Selección de Alumnos")
@@ -46,53 +67,31 @@ def main():
     # Sidebar para cargar archivo
     uploaded_file = st.sidebar.file_uploader("Cargar lista de alumnos", type=['txt'])
     
-    # Estado para almacenar nombres y ganador
-    if 'nombres' not in st.session_state:
-        st.session_state.nombres = []
-    if 'rotacion' not in st.session_state:
-        st.session_state.rotacion = 0
-    if 'ganador' not in st.session_state:
-        st.session_state.ganador = None
+    # Contenedor para la ruleta
+    ruleta_container = st.empty()
     
+    # Cargar nombres
     if uploaded_file is not None:
         # Leer nombres
         nombres = uploaded_file.getvalue().decode("utf-8").splitlines()
-        st.session_state.nombres = [nombre.strip() for nombre in nombres if nombre.strip()]
+        nombres = [nombre.strip() for nombre in nombres if nombre.strip()]
         
         # Mostrar número de nombres
-        st.sidebar.success(f"Se cargaron {len(st.session_state.nombres)} nombres")
-    
-    # Verificar si hay nombres cargados
-    if st.session_state.nombres:
-        # Botón para girar
-        if st.button("Girar Ruleta"):
-            # Generar rotación aleatoria (varias vueltas completas)
-            st.session_state.rotacion = random.randint(720, 3600)
-            
-            # Crear ruleta con rotación
-            fig = crear_ruleta(st.session_state.nombres, st.session_state.rotacion)
-            
-            # Mostrar ruleta
-            st.plotly_chart(fig)
-            
-            # Calcular ganador
-            n = len(st.session_state.nombres)
-            angulo_seccion = 360 / n
-            indice_ganador = int((360 - (st.session_state.rotacion % 360)) / angulo_seccion)
-            st.session_state.ganador = st.session_state.nombres[indice_ganador % n]
-            
-            # Mostrar ganador
-            st.markdown("### 🏆 ¡GANADOR! 🏆")
-            st.markdown(f"## {st.session_state.ganador}")
+        st.sidebar.success(f"Se cargaron {len(nombres)} nombres")
         
-        # Si ya hay un ganador previo, mostrar ruleta con última rotación
-        elif st.session_state.ganador:
-            fig = crear_ruleta(st.session_state.nombres, st.session_state.rotacion)
-            st.plotly_chart(fig)
+        # Botón para girar
+        if st.sidebar.button("Girar Ruleta"):
+            # Crear animación de giro
+            frames, ganador = crear_ruleta_animada(nombres)
             
-            # Mostrar ganador previo
+            # Animar ruleta
+            for frame in frames:
+                ruleta_container.plotly_chart(frame)
+                time.sleep(0.1)  # Controla la velocidad de la animación
+            
+            # Mostrar ganador final
             st.markdown("### 🏆 ¡GANADOR! 🏆")
-            st.markdown(f"## {st.session_state.ganador}")
+            st.markdown(f"## {ganador}")
     else:
         st.warning("Por favor, cargue un archivo con nombres de alumnos")
 
