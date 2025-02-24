@@ -28,10 +28,7 @@ def crear_ruleta_animada(nombres):
     indice_ganador = int((360 - (rotacion_total % 360)) / angulo_seccion)
     ganador = nombres[indice_ganador % n]
     
-    # Calcular ángulo para el ganador
-    angulo_ganador = (indice_ganador * angulo_seccion + angulo_seccion/2 - rotacion_total) % 360
-    
-    return rotaciones, ganador, angulo_ganador
+    return rotaciones, ganador
 
 def main():
     st.set_page_config(layout="wide")
@@ -61,7 +58,7 @@ def main():
             # Botón para girar
             if st.button("Girar Ruleta"):
                 # Crear animación de giro
-                rotaciones, ganador, angulo_ganador = crear_ruleta_animada(nombres)
+                rotaciones, ganador = crear_ruleta_animada(nombres)
                 
                 # Colores pasteles
                 colores = ['#FF9999', '#99FF99', '#9999FF', '#FFFF99', '#FF99FF']
@@ -107,22 +104,16 @@ def main():
                 fig_final.update_layout(
                     height=600,
                     width=600,
-                    showlegend=False
-                )
-                
-                # Añadir flecha roja grande
-                fig_final.add_annotation(
-                    x=0.9,  # Posición horizontal más a la derecha
-                    y=0.8,  # Posición vertical
-                    text='➔',  # Flecha más grande
-                    showarrow=True,
-                    arrowcolor='red',
-                    arrowsize=3,
-                    arrowwidth=5,
-                    arrowhead=2,
-                    ax=-100,  # Ajustar longitud y ángulo
-                    ay=-80,
-                    font=dict(size=50, color='red')  # Hacer la flecha más grande
+                    showlegend=False,
+                    annotations=[
+                        dict(
+                            x=0.9,
+                            y=0.8,
+                            text='👉',  # Emoji de mano señalando
+                            font=dict(size=50),
+                            showarrow=False
+                        )
+                    ]
                 )
                 
                 # Mostrar ruleta final
