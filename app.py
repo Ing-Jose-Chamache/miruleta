@@ -2,6 +2,7 @@ import streamlit as st
 import random
 import plotly.graph_objs as go
 import time
+import math
 
 def crear_ruleta_animada(nombres):
     """Crear animación de giro de ruleta"""
@@ -22,34 +23,15 @@ def crear_ruleta_animada(nombres):
         rotacion_actual = int(rotacion_total * (i + 1) / pasos)
         rotaciones.append(rotacion_actual)
     
-    # Preparar frames de animación
-    frames = []
-    for rotacion in rotaciones:
-        frame = go.Figure(data=[go.Pie(
-            labels=nombres,
-            values=[1]*n,  # Secciones iguales
-            hole=0.3,  # Efecto de dona
-            marker_colors=colores[:n],
-            textinfo='label',
-            textposition='inside',
-            rotation=rotacion  # Rotación dinámica
-        )])
-        
-        # Configurar layout
-        frame.update_layout(
-            height=600,
-            width=600,
-            showlegend=False
-        )
-        
-        frames.append(frame)
-    
     # Calcular ganador
     angulo_seccion = 360 / n
     indice_ganador = int((360 - (rotacion_total % 360)) / angulo_seccion)
     ganador = nombres[indice_ganador % n]
     
-    return frames, ganador, rotacion_total
+    # Calcular ángulo para el ganador
+    angulo_ganador = (indice_ganador * angulo_seccion + angulo_seccion/2 - rotacion_total) % 360
+    
+    return rotaciones, ganador, angulo_ganador
 
 def main():
     st.set_page_config(layout="wide")
@@ -79,34 +61,77 @@ def main():
             # Botón para girar
             if st.button("Girar Ruleta"):
                 # Crear animación de giro
-                frames, ganador, rotacion_total = crear_ruleta_animada(nombres)
+                rotaciones, ganador, angulo_ganador = crear_ruleta_animada(nombres)
+                
+                # Colores pasteles
+                colores = ['#FF9999', '#99FF99', '#9999FF', '#FFFF99', '#FF99FF']
+                n = len(nombres)
                 
                 # Animar ruleta
-                for frame in frames:
+                for rotacion in rotaciones:
+                    # Crear figura de la ruleta
+                    fig = go.Figure(data=[go.Pie(
+                        labels=nombres,
+                        values=[1]*n,
+                        hole=0.3,
+                        marker_colors=colores[:n],
+                        textinfo='label',
+                        textposition='inside',
+                        rotation=rotacion
+                    )])
+                    
+                    # Configurar layout
+                    fig.update_layout(
+                        height=600,
+                        width=600,
+                        showlegend=False
+                    )
+                    
+                    # Mostrar ruleta
                     with col1:
-                        ruleta_container.plotly_chart(frame)
-                    time.sleep(0.1)  # Controla la velocidad de la animación
+                        ruleta_container.plotly_chart(fig)
+                    time.sleep(0.1)
                 
-                # Frame final con flecha roja
-                frame_final = frames[-1]
+                # Crear figura final
+                fig_final = go.Figure(data=[go.Pie(
+                    labels=nombres,
+                    values=[1]*n,
+                    hole=0.3,
+                    marker_colors=colores[:n],
+                    textinfo='label',
+                    textposition='inside',
+                    rotation=rotaciones[-1]
+                )])
                 
-                # Añadir flecha roja en 45 grados
-                frame_final.add_annotation(
-                    x=0.85, 
-                    y=0.85,
-                    text='➡️',
-                    showarrow=True,
-                    arrowcolor='red',
-                    arrowsize=2,
-                    arrowwidth=3,
-                    arrowhead=1,
-                    ax=-50,
-                    ay=-50
+                # Configurar layout
+                fig_final.update_layout(
+                    height=600,
+                    width=600,
+                    showlegend=False
                 )
                 
-                # Mostrar frame final
+                # Añadir flecha roja grande
+                fig_final.add_annotation(
+                    x=0.9,  # Posición horizontal más a la derecha
+                    y=0.8,  # Posición vertical
+                    text='➔',  # Flecha más grande
+                    showarrow=True,
+                    arrowcolor='red',
+                    arrowsize=3,
+                    arrowwidth=5,
+                    arrowhead=2,
+                    ax=-100,  # Ajustar longitud y ángulo
+                    ay=-80,
+                    font=dict(size=50, color='red')  # Hacer la flecha más grande
+                )
+                
+                # Mostrar ruleta final
                 with col1:
-                    ruleta_container.plotly_chart(frame_final)
+                    ruleta_container.plotly_chart(fig_final)
+                
+                # Mostrar ganador
+                with col2:
+                    st.success(f"Ganador: {ganador}")
     else:
         with col2:
             st.warning("Por favor, cargue un archivo con nombres de alumnos")
