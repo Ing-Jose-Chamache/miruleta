@@ -108,8 +108,8 @@ def main():
                     annotations=[
                         dict(
                             x=0.5,  # Centrado horizontalmente
-                            y=0.05,  # Posición en la parte inferior
-                            text='👇',  # Emoji de mano señalando hacia abajo
+                            y=1.15,  # Posición en la parte superior
+                            text='👆',  # Emoji de mano señalando hacia abajo
                             font=dict(size=100),  # Tamaño grande
                             showarrow=False
                         )
@@ -119,10 +119,6 @@ def main():
                 # Mostrar ruleta final
                 with col1:
                     ruleta_container.plotly_chart(fig_final)
-                
-                # Mostrar ganador
-                with col2:
-                    st.success(f"Ganador: {ganador}")
     else:
         with col2:
             st.warning("Por favor, cargue un archivo con nombres de alumnos")
