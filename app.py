@@ -107,10 +107,10 @@ def main():
                     showlegend=False,
                     annotations=[
                         dict(
-                            x=0.9,
-                            y=0.8,
-                            text='👉',  # Emoji de mano señalando
-                            font=dict(size=50),
+                            x=0.5,  # Centrado horizontalmente
+                            y=1.15,  # Posición sobre la ruleta
+                            text='👈',  # Emoji de mano señalando hacia la izquierda
+                            font=dict(size=100),  # Tamaño mucho más grande
                             showarrow=False
                         )
                     ]
