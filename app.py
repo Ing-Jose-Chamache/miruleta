@@ -2,8 +2,8 @@ import streamlit as st
 import random
 import plotly.graph_objs as go
 
-def crear_ruleta(nombres):
-    """Crear ruleta interactiva con Plotly"""
+def crear_ruleta(nombres, rotacion=0):
+    """Crear ruleta interactiva con Plotly y rotación"""
     # Colores pasteles
     colores = ['#FF9999', '#99FF99', '#9999FF', '#FFFF99', '#FF99FF']
     
@@ -17,7 +17,8 @@ def crear_ruleta(nombres):
         hole=0.3,  # Efecto de dona
         marker_colors=colores[:n],
         textinfo='label',
-        textposition='inside'
+        textposition='inside',
+        rotation=rotacion  # Añadir rotación
     )])
     
     # Configurar layout
@@ -48,6 +49,8 @@ def main():
     # Estado para almacenar nombres y ganador
     if 'nombres' not in st.session_state:
         st.session_state.nombres = []
+    if 'rotacion' not in st.session_state:
+        st.session_state.rotacion = 0
     if 'ganador' not in st.session_state:
         st.session_state.ganador = None
     
@@ -59,31 +62,33 @@ def main():
         # Mostrar número de nombres
         st.sidebar.success(f"Se cargaron {len(st.session_state.nombres)} nombres")
     
-    # Contenedor para la ruleta
-    ruleta_container = st.empty()
-    
     # Verificar si hay nombres cargados
     if st.session_state.nombres:
         # Botón para girar
         if st.button("Girar Ruleta"):
-            # Crear ruleta
-            fig = crear_ruleta(st.session_state.nombres)
+            # Generar rotación aleatoria (varias vueltas completas)
+            st.session_state.rotacion = random.randint(720, 3600)
+            
+            # Crear ruleta con rotación
+            fig = crear_ruleta(st.session_state.nombres, st.session_state.rotacion)
             
             # Mostrar ruleta
-            ruleta_container.plotly_chart(fig)
+            st.plotly_chart(fig)
             
-            # Seleccionar ganador
-            st.session_state.ganador = random.choice(st.session_state.nombres)
+            # Calcular ganador
+            n = len(st.session_state.nombres)
+            angulo_seccion = 360 / n
+            indice_ganador = int((360 - (st.session_state.rotacion % 360)) / angulo_seccion)
+            st.session_state.ganador = st.session_state.nombres[indice_ganador % n]
             
             # Mostrar ganador
             st.markdown("### 🏆 ¡GANADOR! 🏆")
             st.markdown(f"## {st.session_state.ganador}")
         
-        # Si ya hay un ganador previo
+        # Si ya hay un ganador previo, mostrar ruleta con última rotación
         elif st.session_state.ganador:
-            # Mostrar ruleta
-            fig = crear_ruleta(st.session_state.nombres)
-            ruleta_container.plotly_chart(fig)
+            fig = crear_ruleta(st.session_state.nombres, st.session_state.rotacion)
+            st.plotly_chart(fig)
             
             # Mostrar ganador previo
             st.markdown("### 🏆 ¡GANADOR! 🏆")
