@@ -28,7 +28,7 @@ def crear_ruleta_animada(nombres):
     indice_ganador = int((360 - (rotacion_total % 360)) / angulo_seccion)
     ganador = nombres[indice_ganador % n]
     
-    return rotaciones, ganador
+    return rotaciones, ganador, indice_ganador % n
 
 def main():
     st.set_page_config(layout="wide")
@@ -58,7 +58,7 @@ def main():
             # Botón para girar
             if st.button("Girar Ruleta"):
                 # Crear animación de giro
-                rotaciones, ganador = crear_ruleta_animada(nombres)
+                rotaciones, ganador, indice_ganador = crear_ruleta_animada(nombres)
                 
                 # Colores pasteles
                 colores = ['#FF9999', '#99FF99', '#9999FF', '#FFFF99', '#FF99FF']
@@ -108,9 +108,9 @@ def main():
                     annotations=[
                         dict(
                             x=0.5,  # Centrado horizontalmente
-                            y=1.15,  # Posición sobre la ruleta
-                            text='👈',  # Emoji de mano señalando hacia la izquierda
-                            font=dict(size=100),  # Tamaño mucho más grande
+                            y=0.05,  # Posición en la parte inferior
+                            text='👇',  # Emoji de mano señalando hacia abajo
+                            font=dict(size=100),  # Tamaño grande
                             showarrow=False
                         )
                     ]
