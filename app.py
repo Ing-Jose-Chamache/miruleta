@@ -37,19 +37,9 @@ def crear_ruleta_animada(nombres):
         
         # Configurar layout
         frame.update_layout(
-            title='Ruleta de Selección de Alumnos',
             height=600,
             width=600,
             showlegend=False
-        )
-        
-        # Añadir flecha
-        frame.add_annotation(
-            x=0.5, 
-            y=1.15,
-            text='➡️',
-            showarrow=False,
-            font=dict(size=50)
         )
         
         frames.append(frame)
@@ -59,16 +49,21 @@ def crear_ruleta_animada(nombres):
     indice_ganador = int((360 - (rotacion_total % 360)) / angulo_seccion)
     ganador = nombres[indice_ganador % n]
     
-    return frames, ganador
+    return frames, ganador, rotacion_total
 
 def main():
-    st.title("🎡 Ruleta de Selección de Alumnos")
+    st.set_page_config(layout="wide")
     
-    # Sidebar para cargar archivo
-    uploaded_file = st.sidebar.file_uploader("Cargar lista de alumnos", type=['txt'])
+    # Dividir la pantalla en dos columnas
+    col1, col2 = st.columns([3, 1])
+    
+    with col2:
+        # Sidebar para cargar archivo
+        uploaded_file = st.file_uploader("Cargar lista de alumnos", type=['txt'])
     
     # Contenedor para la ruleta
-    ruleta_container = st.empty()
+    with col1:
+        ruleta_container = st.empty()
     
     # Cargar nombres
     if uploaded_file is not None:
@@ -76,24 +71,45 @@ def main():
         nombres = uploaded_file.getvalue().decode("utf-8").splitlines()
         nombres = [nombre.strip() for nombre in nombres if nombre.strip()]
         
-        # Mostrar número de nombres
-        st.sidebar.success(f"Se cargaron {len(nombres)} nombres")
+        with col2:
+            # Mostrar número de nombres
+            st.success(f"Se cargaron {len(nombres)} nombres")
         
-        # Botón para girar
-        if st.sidebar.button("Girar Ruleta"):
-            # Crear animación de giro
-            frames, ganador = crear_ruleta_animada(nombres)
-            
-            # Animar ruleta
-            for frame in frames:
-                ruleta_container.plotly_chart(frame)
-                time.sleep(0.1)  # Controla la velocidad de la animación
-            
-            # Mostrar ganador final
-            st.markdown("### 🏆 ¡GANADOR! 🏆")
-            st.markdown(f"## {ganador}")
+        with col2:
+            # Botón para girar
+            if st.button("Girar Ruleta"):
+                # Crear animación de giro
+                frames, ganador, rotacion_total = crear_ruleta_animada(nombres)
+                
+                # Animar ruleta
+                for frame in frames:
+                    with col1:
+                        ruleta_container.plotly_chart(frame)
+                    time.sleep(0.1)  # Controla la velocidad de la animación
+                
+                # Frame final con flecha roja
+                frame_final = frames[-1]
+                
+                # Añadir flecha roja en 45 grados
+                frame_final.add_annotation(
+                    x=0.85, 
+                    y=0.85,
+                    text='➡️',
+                    showarrow=True,
+                    arrowcolor='red',
+                    arrowsize=2,
+                    arrowwidth=3,
+                    arrowhead=1,
+                    ax=-50,
+                    ay=-50
+                )
+                
+                # Mostrar frame final
+                with col1:
+                    ruleta_container.plotly_chart(frame_final)
     else:
-        st.warning("Por favor, cargue un archivo con nombres de alumnos")
+        with col2:
+            st.warning("Por favor, cargue un archivo con nombres de alumnos")
 
 if __name__ == "__main__":
     main()
