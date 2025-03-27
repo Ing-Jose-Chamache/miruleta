@@ -169,3 +169,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+# Editado por José Yván Chamache para evitar eliminación automática de Codespace (27/03/2025)
