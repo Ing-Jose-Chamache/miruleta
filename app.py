@@ -169,7 +169,8 @@ def main():
 
 if __name__ == "__main__":
     main()
-# Editado por José Yván Chamache para evitar eliminación automática de Codespace (17/10/2025)
+# Editado por José Yván Chamache para evitar eliminación automática de Codespace (14/11/2025)
+
 
 
 
